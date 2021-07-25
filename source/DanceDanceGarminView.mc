@@ -2,6 +2,8 @@ using Toybox.WatchUi;
 using Toybox.Graphics;
 using Toybox.System;
 using Toybox.Lang;
+using Toybox.System;
+using Toybox.Communications;
 
 class DanceDanceGarminView extends WatchUi.WatchFace {
     private var _animationDelegate;
@@ -22,6 +24,40 @@ class DanceDanceGarminView extends WatchUi.WatchFace {
     function onShow() {
         _animationDelegate.handleOnShow(self);
         _animationDelegate.play();
+        //Module 'Toybox.Communications' not available to 'Watch Face'
+        //executeWebCall();
+    }
+    
+    // set up the response callback function
+   function onReceive(responseCode, data) {
+       if (responseCode == 200) {
+           System.println("Request Successful" + "Data Received : " + data);                   // print success
+       }
+       else {
+           System.println("Response: " + responseCode);            // print response code
+       }
+
+   }
+    
+    private function executeWebCall(){
+    	 var url = "https://httpbin.org/get";                         // set the url
+
+       var params = {                                              // set the parameters
+              "api_call" => "random_params"
+       };
+
+       var options = {                                             // set the options
+           :method => Communications.HTTP_REQUEST_METHOD_GET,      // set HTTP method
+           :headers => {                                           // set headers
+                   "Content-Type" => Communications.REQUEST_CONTENT_TYPE_JSON},
+                                                                   // set response type
+           :responseType => Communications.REQUEST_CONTENT_TYPE_JSON
+       };
+
+       var responseCallback = method(:onReceive);                  // set responseCallback to
+                                                                   // onReceive() method
+       // Make the Communications.makeWebRequest() call
+       Communications.makeWebRequest(url, params, options, method(:onReceive));
     }
 
     // Called when this View is removed from the screen. Save the
